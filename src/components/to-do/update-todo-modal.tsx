@@ -1,40 +1,65 @@
 import { AlertCircle, X } from "lucide-react";
 import { Controller, useForm, type SubmitHandler } from "react-hook-form";
 import { Input } from "../ui/input";
+import type { Todo } from "@/feature/to-do/api/todo.api.interface";
+import { useEffect, useState } from "react";
+import { useTodo } from "@/feature/to-do/hooks";
 
-interface CreateTodoFormData {
+interface UpdateTodoFormData {
   title: string;
   description?: string;
   important: boolean;
 }
 
-interface CreateTodoModalProps {
+interface UpdateTodoModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSubmit: (data: CreateTodoFormData) => void;
+  todoId: number;
 }
 
-export default function CreateTodoModal({
+export default function UpdateTodoModal({
   isOpen,
   onClose,
-  onSubmit,
-}: CreateTodoModalProps) {
+  todoId,
+}: UpdateTodoModalProps) {
+  const { getTodoById, updateTodo } = useTodo();
+  const [todo, setTodo] = useState<Todo | null>(null);
   const {
     register,
     handleSubmit,
     control,
     reset,
     formState: { errors },
-  } = useForm<CreateTodoFormData>({
+  } = useForm<UpdateTodoFormData>({
     defaultValues: { title: "", description: "", important: false },
   });
 
+  useEffect(() => {
+    if (!todoId || !isOpen) return;
+
+    const loadTodo = async () => {
+      const data = await getTodoById(todoId);
+      
+      if (data) {
+        setTodo(data);
+        reset({
+          title: data.title,
+          description: data.description || "",
+          important: data.important || false,
+        });
+      }
+    };
+
+    loadTodo();
+  }, [todoId, isOpen, reset]);
+
   if (!isOpen) return null;
 
-  const onFormSubmit: SubmitHandler<CreateTodoFormData> = (data) => {
-   onSubmit(data);
-      reset();
-      onClose();
+  const onFormSubmit: SubmitHandler<UpdateTodoFormData> = (data) => {
+    if (!todo) return;
+    updateTodo(todo.id, data);
+    reset();
+    onClose();
   };
 
   return (
@@ -43,7 +68,7 @@ export default function CreateTodoModal({
         {/* Header */}
         <div className="px-6 py-4 border-b border-slate-100 flex justify-between items-center bg-slate-50">
           <h3 className="font-bold text-lg text-slate-800 uppercase">
-            Thêm công việc mới
+            Chỉnh sửa công việc
           </h3>
           <button
             onClick={onClose}
@@ -140,7 +165,7 @@ export default function CreateTodoModal({
               type="submit"
               className="px-4 py-2 text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 rounded-lg disabled:opacity-50"
             >
-              Tạo mới
+              Cập nhật
             </button>
           </div>
         </form>
