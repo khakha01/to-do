@@ -1,4 +1,4 @@
-import { Bell, Menu, Plus, Search } from "lucide-react";
+import { Bell, Plus, Search } from "lucide-react";
 import { TodoItem } from "../../../components/to-do/to-do-item";
 import { useTodo } from "../../../feature/to-do/hooks";
 import { useState } from "react";
@@ -9,6 +9,16 @@ export default function ToDoPage() {
   const { todos, loading, addTodo, updateTodo, deleteTodo } = useTodo();
   const [isModalOpen, setIsModalOpen] = useState(false);
 
+  const completeCount = todos.filter(
+    (todo) => todo.status === "Completed"
+  ).length;
+  const pendingCount = todos.filter((todo) => todo.status === "Pending").length;
+
+  const [searchTerm, setSearchTerm] = useState("");
+
+  const filterTodos = todos.filter((t) =>
+    t.title.toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
   return (
     <div className="flex h-screen bg-slate-50 font-sans text-slate-800 overflow-hidden">
@@ -17,47 +27,52 @@ export default function ToDoPage() {
         <aside
           className="w-64 
         bg-white border-r border-slate-200 transition-all duration-300 ease-in-out flex flex-col flex-shrink-0"
-        >
-          
-        </aside>
+        ></aside>
         {/* Top Header */}
-        <header className="h-16 bg-white border-b border-slate-200 flex items-center justify-between px-6 flex-shrink-0 z-10">
-          <div className="flex items-center gap-4">
-            <button className="p-2 bg-white border-slate-400 hover:bg-slate-100 rounded-lg text-slate-500">
-              <Menu size={20} />
-            </button>
-            <h1 className="text-xl font-bold text-slate-800 hidden sm:block">
-              {/* {activeTab} */}
-            </h1>
-          </div>
+        <div className=" bg-white border-b border-slate-200">
+          <header className="h-16 flex items-center justify-between flex-shrink-0 z-10 max-w-4xl mx-auto">
+            <div className="flex items-center gap-4">
+              <img src="images/LOGO-V2.png" alt="todo" className="w-1/2"/>
+              <h1 className="text-xl font-bold text-slate-800 hidden sm:block">
+                {/* {activeTab} */}
+              </h1>
+            </div>
 
-          <div className="flex items-center gap-3 w-full max-w-md mx-4">
-           
-          </div>
-          <button className="p-2 relative bg-white border-slate-400 hover:bg-slate-100 rounded-lg text-slate-500">
-            <Bell size={20} />
-            <span className="absolute top-2 right-2 w-2 h-2 bg-red-500 rounded-full border-2 border-white"></span>
-          </button>
-        </header>
+            <div className="flex items-center gap-3 w-full max-w-md mx-4"></div>
+            <button className="p-2 relative bg-white border-slate-400 hover:bg-slate-100 rounded-lg text-slate-500">
+              <Bell size={20} />
+              <span className="absolute top-2 right-2 w-2 h-2 bg-red-500 rounded-full border-2 border-white"></span>
+            </button>
+          </header>
+        </div>
 
         {/* Scrollable Content */}
         <div className="flex-1 overflow-y-auto p-6 lg:p-10">
           <div className="max-w-4xl mx-auto">
             {/* Greeting & Stats */}
             <div className="mb-8">
-              <h2 className="text-2xl font-bold mb-1 ">
-                Tasks - My Day ☀️
-              </h2>
+              <h2 className="text-2xl font-bold mb-1 ">Tasks - My Day ☀️</h2>
               <p className="text-slate-500 mb-6">
                 Here's what's on your plate today.
               </p>
 
-               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                    <StatusCard label="Total Tasks" count={12} color="text-slate-700" />
-                    <StatusCard label="Pending" count={4} color="text-orange-500" />
-                    <StatusCard label="Completed" count={8} color="text-emerald-500" />
-                    <StatusCard label="Overdue" count={2} color="text-red-500" />            
-                </div> 
+              <div className="grid grid-cols-3 md:grid-cols-3 gap-4">
+                <StatusCard
+                  label="Total Tasks"
+                  count={todos.length}
+                  color="text-slate-700"
+                />
+                <StatusCard
+                  label="Pending"
+                  count={pendingCount}
+                  color="text-orange-500"
+                />
+                <StatusCard
+                  label="Completed"
+                  count={completeCount}
+                  color="text-emerald-500"
+                />
+              </div>
             </div>
 
             {/* Search Bar */}
@@ -65,20 +80,20 @@ export default function ToDoPage() {
               <Search size={20} className="text-slate-400 ml-2" />
               <input
                 type="text"
+                onChange={(e) => setSearchTerm(e.target.value)}
                 placeholder="Tìm kiếm công việc..."
                 className="flex-1 outline-none text-base bg-transparent placeholder:text-slate-400"
-              
               />
             </div>
 
             {/* Add Button */}
             <div className="mb-6 flex justify-end">
-              <button 
-              onClick={() => setIsModalOpen(true)}
+              <button
+                onClick={() => setIsModalOpen(true)}
                 className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2.5 rounded-lg font-medium transition-colors shadow-md hover:shadow-lg"
               >
                 <Plus size={20} />
-                Add New Task
+                Thêm công việc
               </button>
             </div>
 
@@ -88,14 +103,15 @@ export default function ToDoPage() {
                 {/* Tasks - {activeTab} */}
               </p>
               {!loading &&
-                todos.map((todo) => (
+                filterTodos.map((todo) => (
                   <TodoItem
                     key={todo.id}
                     todo={todo}
                     onToggle={() =>
-                      updateTodo(todo.id, { 
-                        status: todo.status === "Completed" ? "Pending" : "Completed"
-                       })
+                      updateTodo(todo.id, {
+                        status:
+                          todo.status === "Completed" ? "Pending" : "Completed",
+                      })
                     }
                     onDelete={() => deleteTodo(todo.id)}
                   />
@@ -105,7 +121,7 @@ export default function ToDoPage() {
         </div>
       </main>
       <CreateTodoModal
-      isOpen={isModalOpen}
+        isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
         onSubmit={addTodo}
       />

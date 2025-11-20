@@ -14,6 +14,11 @@ export const todoApi = {
     return res.data;
   },
 
+  getTodoById: async (id: number): Promise<Todo> => {
+    const res = await axios.get(`${BASE_URL}/${id}`);
+    return res.data;
+  },
+
   updateTodo: async (id: number, data: UpdateTodoDTO): Promise<Todo | null> => {
     const res = await axios.post(`${BASE_URL}/${id}`, data);
     return res.data;

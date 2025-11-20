@@ -1,5 +1,14 @@
-import { Calendar, CheckCircle2Icon, Circle, Trash2 } from "lucide-react";
+import {
+  Calendar,
+  CheckCircle2Icon,
+  Circle,
+  SquarePen,
+  Trash2,
+} from "lucide-react";
 import type { Todo } from "../../feature/to-do/api/todo.api.interface";
+import { useState } from "react";
+import UpdateTodoModal from "./update-todo-modal";
+import ConfirmDeleteModal from "./confirm-delete-modal";
 
 export function TodoItem({
   todo,
@@ -10,12 +19,15 @@ export function TodoItem({
   onToggle: () => void;
   onDelete: () => void;
 }) {
-    const isComplete = todo.status === 'Completed'
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isConfirmOpen, setIsConfirmOpen] = useState(false);
+  const isComplete = todo.status === "Completed";
+
   return (
     <div className="group bg-white hover:bg-indigo-50/30 p-4 rounded-xl border border-slate-100 hover:border-indigo-200 transition-all flex items-center gap-4 shadow-sm cursor-pointer">
       <button
         onClick={onToggle}
-        className={`flex-shrink-0 bg-white ${
+        className={`flex-shrink-0 ${
           isComplete
             ? "text-emerald-500"
             : "text-slate-300 hover:text-indigo-500"
@@ -48,12 +60,33 @@ export function TodoItem({
 
       <div className="opacity-0 group-hover:opacity-100 flex items-center gap-2 transition-opacity">
         <button
-          onClick={onDelete}
-          className="p-2 bg-white border-slate-400 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg"
+          onClick={() => {
+            setIsModalOpen(true);
+          }}
+          className="p-2 bg-white rounded-2xl"
+        >
+          <SquarePen size={18} />
+        </button>
+        <button
+          onClick={() => setIsConfirmOpen(true)}
+          className="p-2 bg-white text-red-600 hover:text-red-700 rounded-2xl"
         >
           <Trash2 size={18} />
         </button>
       </div>
+      <UpdateTodoModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        todoId={todo.id}
+      />
+      <ConfirmDeleteModal
+        isOpen={isConfirmOpen}
+        onClose={() => setIsConfirmOpen(false)}
+        onConfirm={() => {
+          onDelete();
+          setIsConfirmOpen(false);
+        }}
+      />
     </div>
   );
 }

@@ -13,8 +13,10 @@ export interface CreateTodoDTO {
 
 export interface UpdateTodoDTO {
   title?: string;
-  status: StatusTodo;
+  description?: string;
+  important?: boolean;
+  status?:StatusTodo;
 }
 
 
-export type StatusTodo = 'Pending' | 'Completed' | 'Important'
+export type StatusTodo = 'Pending' | 'Completed' ;
